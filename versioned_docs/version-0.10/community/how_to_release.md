@@ -399,7 +399,7 @@ These steps ensure all published artifacts are verified and correctly deployed t
 ### build a Pre-release
 
 You need to build a Pre-release before voting, such as:
-https://github.com/apache/fury/releases/tag/v0.10.3-rc2
+https://github.com/apache/fury/releases/tag/v0.11.0-rc2
 
 ### Fury Community Vote
 
@@ -647,7 +647,7 @@ like [#2207](https://github.com/apache/fury/pull/2207).
 ### Github officially released
 
 You need to officially release this version in the Fury project
-Reference implementation: https://github.com/apache/fury/releases/tag/v0.10.3
+Reference implementation: https://github.com/apache/fury/releases/tag/v0.11.0
 
 ### Release Maven artifacts
 
