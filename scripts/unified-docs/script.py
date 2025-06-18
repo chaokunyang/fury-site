@@ -44,6 +44,12 @@ def copy_markdown_files(src_folder, dst_folder):
         executor.map(lambda args: copy_markdown_file(*args), tasks)
 
 
+def update_markdown_content(content):
+    # Update relative paths (../) to absolute paths without /docs/ prefix
+    content = content.replace('../specification/', '/specification/')
+    return content
+
+
 def copy_guide_files():
     guide_src = "../../docs/guide/"
     guide_dst = "../../docs/docs/guide/"
@@ -55,8 +61,20 @@ def copy_guide_files():
             src_path = os.path.join(guide_src, item)
             dst_path = os.path.join(guide_dst, item)
             if os.path.isfile(src_path):
-                shutil.copy2(src_path, dst_path)
-                print(f"Copied {src_path} to {dst_path}")
+                # If it's a markdown file, update the content
+                if src_path.endswith('.md'):
+                    with open(src_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    # Update the paths in content
+                    updated_content = update_markdown_content(content)
+                    # Write the updated content to destination
+                    with open(dst_path, 'w', encoding='utf-8') as f:
+                        f.write(updated_content)
+                    print(f"Copied and updated paths in {src_path} to {dst_path}")
+                else:
+                    # For non-markdown files, just copy as is
+                    shutil.copy2(src_path, dst_path)
+                    print(f"Copied {src_path} to {dst_path}")
         print(f"Finished copying guide files")
 
 
