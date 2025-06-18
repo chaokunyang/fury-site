@@ -21,7 +21,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def copy_markdown_file(src_file, dst_file):
-
     if not os.path.exists(dst_file):
         os.makedirs(os.path.dirname(dst_file), exist_ok=True)
         shutil.copy2(src_file, dst_file)
@@ -31,7 +30,6 @@ def copy_markdown_file(src_file, dst_file):
 
 
 def copy_markdown_files(src_folder, dst_folder):
-
     tasks = []
 
     for root, _, files in os.walk(src_folder):
@@ -46,7 +44,26 @@ def copy_markdown_files(src_folder, dst_folder):
         executor.map(lambda args: copy_markdown_file(*args), tasks)
 
 
+def copy_guide_files():
+    guide_src = "../../docs/guide/"
+    guide_dst = "../../docs/docs/guide/"
+    
+    # Copy all files from guide to docs/guide
+    if os.path.exists(guide_src):
+        os.makedirs(guide_dst, exist_ok=True)
+        for item in os.listdir(guide_src):
+            src_path = os.path.join(guide_src, item)
+            dst_path = os.path.join(guide_dst, item)
+            if os.path.isfile(src_path):
+                shutil.copy2(src_path, dst_path)
+                print(f"Copied {src_path} to {dst_path}")
+        print(f"Finished copying guide files")
+
+
 def execute():
+    # First copy guide files
+    copy_guide_files()
+    
     base_src_folder = "../../docs/"
     zh_cn_docs_dst = "../../i18n/zh-CN/docusaurus-plugin-content-docs/current/"
     en_us_docs_dst = "../../i18n/eu-US/docusaurus-plugin-content-docs/current/"
