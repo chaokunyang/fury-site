@@ -111,17 +111,17 @@ func main() {
 **JavaScript**
 
 ```javascript
-import Fory from '@foryjs/fory';
+import Fory from "@foryjs/fory";
 
 /**
  * @foryjs/hps use v8's fast-calls-api that can be called directly by jit, ensure that the version of Node is 20 or above.
  * Experimental feature, installation success cannot be guaranteed at this moment
  * If you are unable to install the module, replace it with `const hps = null;`
  **/
-import hps from '@foryjs/hps';
+import hps from "@foryjs/hps";
 
 const fory = new Fory({ hps });
-const input = fory.serialize('hello fory');
+const input = fory.serialize("hello fory");
 const result = fory.deserialize(input);
 console.log(result);
 ```
@@ -330,22 +330,22 @@ func main() {
 **JavaScript**
 
 ```javascript
-import Fory, { Type, InternalSerializerType } from '@foryjs/fory';
+import Fory, { Type, InternalSerializerType } from "@foryjs/fory";
 
 /**
  * @foryjs/hps use v8's fast-calls-api that can be called directly by jit, ensure that the version of Node is 20 or above.
  * Experimental feature, installation success cannot be guaranteed at this moment
  * If you are unable to install the module, replace it with `const hps = null;`
  **/
-import hps from '@foryjs/hps';
+import hps from "@foryjs/hps";
 
 // Now we describe data structures using JSON, but in the future, we will use more ways.
-const description = Type.object('example.foo', {
+const description = Type.object("example.foo", {
   foo: Type.string(),
 });
 const fory = new Fory({ hps });
 const { serialize, deserialize } = fory.registerSerializer(description);
-const input = serialize({ foo: 'hello fory' });
+const input = serialize({ foo: "hello fory" });
 const result = deserialize(input);
 console.log(result);
 ```
@@ -505,23 +505,23 @@ func main() {
 **JavaScript**
 
 ```javascript
-import Fory, { Type } from '@foryjs/fory';
+import Fory, { Type } from "@foryjs/fory";
 /**
  * @foryjs/hps use v8's fast-calls-api that can be called directly by jit, ensure that the version of Node is 20 or above.
  * Experimental feature, installation success cannot be guaranteed at this moment
  * If you are unable to install the module, replace it with `const hps = null;`
  **/
-import hps from '@foryjs/hps';
+import hps from "@foryjs/hps";
 
-const description = Type.object('example.foo', {
+const description = Type.object("example.foo", {
   foo: Type.string(),
-  bar: Type.object('example.foo'),
+  bar: Type.object("example.foo"),
 });
 
 const fory = new Fory({ hps });
 const { serialize, deserialize } = fory.registerSerializer(description);
 const data = {
-  foo: 'hello fory',
+  foo: "hello fory",
 };
 data.bar = data;
 const input = serialize(data);
