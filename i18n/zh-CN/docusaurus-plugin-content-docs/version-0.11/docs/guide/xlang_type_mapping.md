@@ -1,5 +1,5 @@
 ---
-title: 跨语言序列化的类型映射
+title: 跨语言类型映射
 sidebar_position: 3
 id: xlang_type_mapping
 license: |

@@ -1,5 +1,5 @@
 ---
-title: Scala 序列化指南
+title: Scala 序列化
 sidebar_position: 4
 id: scala_guide
 license: |

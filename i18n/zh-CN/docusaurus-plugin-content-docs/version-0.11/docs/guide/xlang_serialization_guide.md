@@ -1,5 +1,5 @@
 ---
-title: 多语言序列化指南
+title: 多语言序列化
 sidebar_position: 2
 id: xlang_object_graph_guide
 license: |

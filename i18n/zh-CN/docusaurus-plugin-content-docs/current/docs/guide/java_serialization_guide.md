@@ -1,5 +1,5 @@
 ---
-title: Java 序列化指南
+title: Java 序列化
 sidebar_position: 0
 id: java_object_graph_guide
 license: |

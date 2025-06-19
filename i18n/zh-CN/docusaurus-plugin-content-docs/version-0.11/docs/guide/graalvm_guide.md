@@ -1,5 +1,5 @@
 ---
-title: GraalVM 指南
+title: GraalVM 序列化
 sidebar_position: 6
 id: graalvm_guide
 license: |
