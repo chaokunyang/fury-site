@@ -1,12 +1,25 @@
 ---
-title: Row format 指南
+title: 行格式指南
 sidebar_position: 1
 id: row_format_guide
+license: |
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 ---
 
-## Row format protocol
-
-### Java
+## Java
 
 ```java
 public class Bar {
@@ -34,26 +47,26 @@ for (int i = 0; i < 1000000; i++) {
   bars.add(bar);
 }
 foo.f4 = bars;
-// Can be zero-copy read by python
+// 可被 python 零拷贝读取
 BinaryRow binaryRow = encoder.toRow(foo);
-// can be data from python
+// 也可以是 python 生成的数据
 Foo newFoo = encoder.fromRow(binaryRow);
-// zero-copy read List<Integer> f2
+// 零拷贝读取 List<Integer> f2
 BinaryArray binaryArray2 = binaryRow.getArray(1);
-// zero-copy read List<Bar> f4
+// 零拷贝读取 List<Bar> f4
 BinaryArray binaryArray4 = binaryRow.getArray(3);
-// zero-copy read 11th element of `readList<Bar> f4`
+// 零拷贝读取 `readList<Bar> f4` 的第 11 个元素
 BinaryRow barStruct = binaryArray4.getStruct(10);
 
-// zero-copy read 6th of f2 of 11th element of `readList<Bar> f4`
+// 零拷贝读取 `readList<Bar> f4` 第 11 个元素的 f2 的第 6 个元素
 barStruct.getArray(1).getInt64(5);
 RowEncoder<Bar> barEncoder = Encoders.bean(Bar.class);
-// deserialize part of data.
+// 只反序列化部分数据
 Bar newBar = barEncoder.fromRow(barStruct);
 Bar newBar2 = barEncoder.fromRow(binaryArray4.getStruct(20));
 ```
 
-### Python
+## Python
 
 ```python
 @dataclass
@@ -86,9 +99,9 @@ print(f"pickle end: {datetime.datetime.now()}")
 
 ### Apache Arrow 支持
 
-Apache Fory Format 还支持从 Arrow Table/RecordBatch 自动转换。
+Fory Format 也支持与 Arrow Table/RecordBatch 的自动转换。
 
-Java：
+Java 示例：
 
 ```java
 Schema schema = TypeInference.inferSchema(BeanA.class);
@@ -101,7 +114,60 @@ for (int i = 0; i < 10; i++) {
 return arrowWriter.finishAsRecordBatch();
 ```
 
-Python：
+## 支持接口与继承类型
+
+Fury 现已支持 Java `interface` 类型和子类（`extends`）类型的行格式映射，带来更动态和灵活的数据 schema。
+
+相关增强见 [#2243](https://github.com/apache/fury/pull/2243)、[#2250](https://github.com/apache/fury/pull/2250)、[#2256](https://github.com/apache/fury/pull/2256)。
+
+### 示例：接口类型的 RowEncoder 映射
+
+```java
+public interface Animal {
+  String speak();
+}
+
+public class Dog implements Animal {
+  public String name;
+
+  @Override
+  public String speak() {
+    return "Woof";
+  }
+}
+
+// 使用 RowEncoder 以接口类型编码和解码
+RowEncoder<Animal> encoder = Encoders.bean(Animal.class);
+Dog dog = new Dog();
+dog.name = "Bingo";
+BinaryRow row = encoder.toRow(dog);
+Animal decoded = encoder.fromRow(row);
+System.out.println(decoded.speak()); // Woof
+
+```
+
+### 示例：继承类型的 RowEncoder 映射
+
+```java
+public class Parent {
+    public String parentField;
+}
+
+public class Child extends Parent {
+    public String childField;
+}
+
+// 使用 RowEncoder 以父类类型编码和解码
+RowEncoder<Parent> encoder = Encoders.bean(Parent.class);
+Child child = new Child();
+child.parentField = "Hello";
+child.childField = "World";
+BinaryRow row = encoder.toRow(child);
+Parent decoded = encoder.fromRow(row);
+
+```
+
+Python 示例：
 
 ```python
 import pyfory
@@ -110,7 +176,7 @@ encoder.to_arrow_record_batch([foo] * 10000)
 encoder.to_arrow_table([foo] * 10000)
 ```
 
-C++:
+C++ 示例：
 
 ```c++
 std::shared_ptr<ArrowWriter> arrow_writer;

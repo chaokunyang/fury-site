@@ -2,30 +2,43 @@
 title: GraalVM 指南
 sidebar_position: 6
 id: graalvm_guide
+license: |
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 ---
 
-## GraalVM Native Image 介绍
+## GraalVM Native Image
 
-GraalVM Native Image 能够将 Java 应用代码编译成为原生的本地应用程序代码，以构建更快、更小、更精简的应用程序。
-其不能使用 JIT 编译器将字节码编译为机器码，并且在没有配置相关反射文件的前提下不支持反射，在很多情况下使用较为复杂。
+GraalVM 的 `native image` 能将 Java 代码提前编译为本地代码，从而构建更快、更小、更精简的应用。
+Native image 不包含 JIT 编译器，无法在运行时将字节码编译为机器码，也不支持反射，除非配置反射元数据文件。
 
-Apache Fory 对 GraalVM Native Image 支持非常完善。Apache Fory 在 Graalvm 构建时能够为 `Fory JIT framework` 和 `MethodHandle/LambdaMetafactory` 生成所有的序列化代码。然后在运行时使用这些生成的代码进行序列化，无需任何额外成本，性能非常出色。
+Fory 在 GraalVM native image 下运行良好。Fory 会在 graalvm 构建阶段为 `Fory JIT framework` 和 `MethodHandle/LambdaMetafactory` 生成所有序列化器代码，运行时直接使用这些生成的代码进行序列化，无需额外开销，性能优异。
 
-为了在 Graalvm Native Images 上使用 Fory，您必须将 Apache Fory 创建为**静态**的类字段，并且在 `enclosing class` 初始化时间期间完成所有的类**注册**。 然后在`resources/META-INF/native-image/$xxx/` 目录下添加 `native-image.properties` 配置文件。指导 GraalVM 在构建 Native Images 时初始化配置的类。
-
-例如，这里我们在配置文件中加入 `org.apache.fory.graalvm.Example` 类：
+在 graalvm native image 下使用 Fory 时，必须将 Fory 创建为类的**静态**字段，并在类初始化时**注册**所有类型。然后在 `resources/META-INF/native-image/$xxx/native-image.properties` 下配置 `native-image.properties`，告知 graalvm 在 native image 构建时初始化该类。例如，配置 `org.apache.fory.graalvm.Example` 类在构建时初始化：
 
 ```properties
 Args = --initialize-at-build-time=org.apache.fory.graalvm.Example
 ```
 
-使用 Apache Fory 的另一个好处是，您不必配置[反射 JSON](https://www.graalvm.org/latest/reference-manual/native-image/metadata/#specifying-reflection-metadata-in-json)和[序列化 JSON](https://www.graalvm.org/latest/reference-manual/native-image/metadata/#serialization)，这非常乏味、繁琐且不方便。使用 Apache Fory 时，您只需为要序列化的每个类型调用 `org.apache.fory.Fory.register(Class<?>, boolean)` 即可。
+使用 fory 的另一个好处是无需配置繁琐的 [reflection json](https://www.graalvm.org/latest/reference-manual/native-image/metadata/#specifying-reflection-metadata-in-json) 和 [serialization json](https://www.graalvm.org/latest/reference-manual/native-image/metadata/#serialization)。只需对每个需要序列化的类型调用 `org.apache.fory.Fory.register(Class<?>, boolean)` 即可。
 
-请注意，由于 GraalVM Native Image 在镜像运行时不支持 JIT，因此 Apache Fory 的 `asyncCompilationEnabled` 选项将在使用 GraalVM Native Image 构建应用时自动禁用。
+注意：Fory 的 `asyncCompilationEnabled` 选项在 graalvm native image 下会自动禁用，因为 native image 运行时不支持 JIT。
 
-## 线程不安全
+## 非线程安全 Fory
 
-Example：
+示例：
 
 ```java
 import org.apache.fory.Fory;
@@ -46,7 +59,7 @@ public class Example {
 
   static {
     fory = Fory.builder().build();
-    // register and generate serializer code.
+    // 注册并生成序列化器代码。
     fory.register(Record.class, true);
   }
 
@@ -61,13 +74,13 @@ public class Example {
 }
 ```
 
-之后在 `native-image.properties` 中加入 `org.apache.fory.graalvm.Example` 配置：
+然后在 `native-image.properties` 配置中添加 `org.apache.fory.graalvm.Example` 的构建时初始化：
 
 ```properties
 Args = --initialize-at-build-time=org.apache.fory.graalvm.Example
 ```
 
-## 线程安全
+## 线程安全 Fory
 
 ```java
 import org.apache.fory.Fory;
@@ -91,7 +104,7 @@ public class ThreadSafeExample {
   static {
     fory = new ThreadLocalFory(classLoader -> {
       Fory f = Fory.builder().build();
-      // register and generate serializer code.
+      // 注册并生成序列化器代码。
       f.register(Foo.class, true);
       return f;
     });
@@ -110,7 +123,7 @@ public class ThreadSafeExample {
 }
 ```
 
-之后在 `native-image.properties` 中加入 `org.apache.fory.graalvm.ThreadSafeExample` 配置：
+然后在 `native-image.properties` 配置中添加 `org.apache.fory.graalvm.ThreadSafeExample` 的构建时初始化：
 
 ```properties
 Args = --initialize-at-build-time=org.apache.fory.graalvm.ThreadSafeExample
@@ -118,25 +131,25 @@ Args = --initialize-at-build-time=org.apache.fory.graalvm.ThreadSafeExample
 
 ## 框架集成
 
-对于框架开发人员，如果您想集成 Apache Fory 进行序列化。您可以提供一个配置文件，让用户列出他们想要序列化的所有类，然后您可以加载这些类并调用 `org.apache.fory.Fory.register(Class<?>, boolean)` 在您的 Fory 集成类中注册这些类，并配置该类在 GraalVM Native Image 构建时进行初始化。
+对于框架开发者，如果希望集成 fory 作为序列化方案，可以提供一个配置文件，让用户列出所有需要序列化的类，然后加载这些类并在 Fory 集成类中调用 `org.apache.fory.Fory.register(Class<?>, boolean)` 进行注册，并配置该类在 graalvm native image 构建时初始化。
 
-## 基准测试
+## Benchmark
 
-在这里，我们给出了 Apache Fory 和 Graalvm 序列化之间的两个类基准测试。
+这里给出 Fory 与 Graalvm Serialization 的两个类的基准测试。
 
-禁用 Apache Fory compression 时：
+Fory 未开启压缩时：
 
-- Struct：Fory 与 `46x speed, 43% size` JDK 进行比较。
-- Pojo：Fory 与 `12x speed, 56% size` JDK进行比较。
+- Struct：Fory 为 JDK 的 `46x 速度，43% 大小`
+- Pojo：Fory 为 JDK 的 `12x 速度，56% 大小`
 
-启用 Apache Fory compression 时：
+Fory 开启压缩时：
 
-- Struct：Fory 与 `24x speed, 31% size` JDK进行比较。
-- Pojo：Fory 与 `12x speed, 48% size` JDK进行比较。
+- Struct：Fory 为 JDK 的 `24x 速度，31% 大小`
+- Pojo：Fory 为 JDK 的 `12x 速度，48% 大小`
 
-有关基准测试代码，请参阅 [Benchmark.java](https://github.com/apache/fory/blob/main/integration_tests/graalvm_tests/src/main/java/org/apache/fory/graalvm/Benchmark.java)。
+基准测试代码见 [[Benchmark.java](https://github.com/apache/fory/blob/main/integration_tests/graalvm_tests/src/main/java/org/apache/fory/graalvm/Benchmark.java)]。
 
-### 结构体基准测试
+### Struct 基准测试
 
 #### 类字段
 
@@ -157,9 +170,9 @@ public class Struct implements Serializable {
 }
 ```
 
-#### 基准测试结果
+#### Benchmark 结果
 
-不开启压缩时测试结果：
+未压缩：
 
 ```
 Benchmark repeat number: 400000
@@ -173,7 +186,7 @@ Compare speed: Fory is 45.70x speed of JDK
 Compare size: Fory is 0.43x size of JDK
 ```
 
-开启压缩时测试结果：
+压缩：
 
 ```
 Benchmark repeat number: 400000
@@ -200,9 +213,9 @@ public class Foo implements Serializable {
 }
 ```
 
-#### 基准测试结果
+#### Benchmark 结果
 
-不开启压缩时测试结果：
+未压缩：
 
 ```
 Benchmark repeat number: 400000
@@ -216,7 +229,7 @@ Compare speed: Fory is 12.19x speed of JDK
 Compare size: Fory is 0.56x size of JDK
 ```
 
-开启压缩时测试结果：
+压缩：
 
 ```
 Benchmark repeat number: 400000
