@@ -36,6 +36,13 @@ This command generates static content into the `build` directory and can be serv
 yarn docusaurus docs:version xxxx
 ```
 
+> **Note:** This command only versions the default docs.  
+> To version i18n docs, you must manually copy the contents of  
+> `i18n/<locale>/docusaurus-plugin-content-docs/current/`  
+> to  
+> `i18n/<locale>/docusaurus-plugin-content-docs/version-xxxx/`  
+> for each locale.
+
 ## How to Contribute
 
 Please read the [CONTRIBUTING](CONTRIBUTING.md) guide for instructions on how to contribute.
