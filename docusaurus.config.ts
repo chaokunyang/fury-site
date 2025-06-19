@@ -38,10 +38,16 @@ const config: Config = {
       {
         docs: {
           sidebarCollapsible: false,
-          lastVersion: 'current',
+          lastVersion: '0.11',
           versions: {
             current: {
               label: 'dev',
+            },
+            '0.11': {
+              label: '0.11',
+            },
+            '0.10': {
+              label: '0.10',
             },
           },
           sidebarPath: './sidebars.ts',

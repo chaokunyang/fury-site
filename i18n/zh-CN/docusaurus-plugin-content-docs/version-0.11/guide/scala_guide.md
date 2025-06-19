@@ -1,5 +1,5 @@
 ---
-title: Scala 序列化
+title: Scala Serialization Guide
 sidebar_position: 4
 id: scala_guide
 license: |
@@ -19,31 +19,31 @@ license: |
   limitations under the License.
 ---
 
-Fory 支持所有 Scala 对象的序列化：
+Fory supports all scala object serialization:
 
-- 支持 `case` class 序列化
-- 支持 `pojo/bean` class 序列化
-- 支持 `object` 单例对象序列化
-- 支持 `collection` 集合序列化
-- 其他类型如 `tuple/either` 以及基础类型也都支持
+- `case` class serialization supported
+- `pojo/bean` class serialization supported
+- `object` singleton serialization supported
+- `collection` serialization supported
+- other types such as `tuple/either` and basic types are all supported too.
 
-同时支持 Scala 2 和 Scala 3。
+Scala 2 and 3 are both supported.
 
-## 安装
+## Install
 
-如果你使用 sbt 并希望在 Scala 2 项目中引入 Fory Scala 依赖，请添加如下内容：
+To add a dependency on Fory scala for scala 2 with sbt, use the following:
 
 ```sbt
 libraryDependencies += "org.apache.fory" % "fory-scala_2.13" % "0.11.0"
 ```
 
-如果你使用 sbt 并希望在 Scala 3 项目中引入 Fory Scala 依赖，请添加如下内容：
+To add a dependency on Fory scala for scala 3 with sbt, use the following:
 
 ```sbt
 libraryDependencies += "org.apache.fory" % "fory-scala_3" % "0.11.0"
 ```
 
-## 快速开始
+## Quict Start
 
 ```scala
 case class Person(name: String, id: Long, github: String)
@@ -51,7 +51,7 @@ case class Point(x : Int, y : Int, z : Int)
 
 object ScalaExample {
   val fory: Fory = Fory.builder().withScalaOptimizationEnabled(true).build()
-  // 注册针对 Scala 优化的 fory 序列化器
+  // Register optimized fory serializers for scala
   ScalaSerializers.registerSerializers(fory)
   fory.register(classOf[Person])
   fory.register(classOf[Point])
@@ -64,9 +64,9 @@ object ScalaExample {
 }
 ```
 
-## Fory 实例创建
+## Fory creation
 
-在使用 fory 进行 Scala 序列化时，建议至少以如下方式创建 fory 实例：
+When using fory for scala serialization, you should create fory at least with following options:
 
 ```scala
 import org.apache.fory.Fory
@@ -74,26 +74,26 @@ import org.apache.fory.serializer.scala.ScalaSerializers
 
 val fory = Fory.builder().withScalaOptimizationEnabled(true).build()
 
-// 注册针对 Scala 优化的 fory 序列化器
+// Register optimized fory serializers for scala
 ScalaSerializers.registerSerializers(fory)
 ```
 
-根据你需要序列化的对象类型，可能还需要注册一些 Scala 内部类型：
+Depending on the object types you serialize, you may need to register some scala internal types:
 
 ```scala
 fory.register(Class.forName("scala.Enumeration.Val"))
 ```
 
-如果你希望避免手动注册这些类型，可以通过 `ForyBuilder#requireClassRegistration(false)` 关闭类注册功能。
-注意：关闭类注册后，可以反序列化未知类型的对象，灵活性更高，但如果反序列化的类包含恶意代码，可能存在安全风险。
+If you want to avoid such registration, you can disable class registration by `ForyBuilder#requireClassRegistration(false)`.
+Note that this option allow to deserialize objects unknown types, more flexible but may be insecure if the classes contains malicious code.
 
-Scala 中循环引用较为常见，建议通过 `ForyBuilder#withRefTracking(true)` 启用引用跟踪（Reference tracking）。如果未启用引用跟踪，在某些 Scala 版本下序列化 Scala Enumeration 时，可能会出现 [StackOverflowError](https://github.com/apache/fory/issues/1032)。
+And circular references are common in scala, `Reference tracking` should be enabled by `ForyBuilder#withRefTracking(true)`. If you don't enable reference tracking, [StackOverflowError](https://github.com/apache/fory/issues/1032) may happen for some scala versions when serializing scala Enumeration.
 
-注意：fory 实例应在多次序列化操作间复用，fory 实例的创建开销较大。
+Note that fory instance should be shared between multiple serialization, the creation of fory instance is not cheap.
 
-如果你需要在多线程环境下共享 fory 实例，应通过 `ForyBuilder#buildThreadSafeFory()` 创建 `ThreadSafeFory` 实例。
+If you use shared fory instance across multiple threads, you should create `ThreadSafeFory` instead by `ForyBuilder#buildThreadSafeFory()` instead.
 
-## 序列化 case class
+## Serialize case object
 
 ```scala
 case class Person(github: String, age: Int, id: Long)
@@ -102,7 +102,7 @@ println(fory.deserialize(fory.serialize(p)))
 println(fory.deserializeJavaObject(fory.serializeJavaObject(p)))
 ```
 
-## 序列化 pojo
+## Serialize pojo
 
 ```scala
 class Foo(f1: Int, f2: String) {
@@ -111,7 +111,7 @@ class Foo(f1: Int, f2: String) {
 println(fory.deserialize(fory.serialize(Foo(1, "chaokunyang"))))
 ```
 
-## 序列化 object 单例对象
+## Serialize object singleton
 
 ```scala
 object singleton {
@@ -121,7 +121,7 @@ val o2 = fory.deserialize(fory.serialize(singleton))
 println(o1 == o2)
 ```
 
-## 序列化集合（Collection）
+## Serialize collection
 
 ```scala
 val seq = Seq(1,2)
@@ -132,7 +132,7 @@ println(fory.deserialize(fory.serialize(list)))
 println(fory.deserialize(fory.serialize(map)))
 ```
 
-## 序列化 Tuple
+## Serialize Tuple
 
 ```scala
 val tuple = Tuple2(100, 10000L)
@@ -141,7 +141,7 @@ val tuple = Tuple4(100, 10000L, 10000L, "str")
 println(fory.deserialize(fory.serialize(tuple)))
 ```
 
-## 序列化 Enum
+## Serialize Enum
 
 ### Scala3 Enum
 
@@ -160,7 +160,7 @@ object ColorEnum extends Enumeration {
 println(fory.deserialize(fory.serialize(ColorEnum.Green)))
 ```
 
-## 序列化 Option
+## Serialize Option
 
 ```scala
 val opt: Option[Long] = Some(100)
@@ -168,15 +168,3 @@ println(fory.deserialize(fory.serialize(opt)))
 val opt1: Option[Long] = None
 println(fory.deserialize(fory.serialize(opt1)))
 ```
-
-## 性能
-
-`pojo/bean/case/object` Scala 对 Apache Fory JIT 的支持很好，性能与 Apache Fory Java 一样优异。
-
-Scala 集合和泛型不遵循 Java 集合框架，并且未与当前发行版中的 Apache Fory JIT 完全集成。性能不会像 Java 的 Fory collections 序列化那么好。
-
-scala 集合的执行将调用 Java 序列化 API `writeObject/readObject/writeReplace/readResolve/readObjectNoData/Externalizable` 和 Fory `ObjectStream` 实现。虽然 `org.apache.fory.serializer.ObjectStreamSerializer` 比 JDK `ObjectOutputStream/ObjectInputStream` 快很多，但它仍然不知道如何使用 Scala 集合泛型。
-
-未来我们计划为 Scala 类型提供更多优化，敬请期待，更多信息请参看 [#682](https://github.com/apache/fory/issues/682)！
-
-Scala 集合序列化已在 [#1073](https://github.com/apache/fory/pull/1073) 完成 ，如果您想获得更好的性能，请使用 Apache Fory snapshot 版本。
